@@ -16,7 +16,7 @@ public class ContentGeneratorService {
     public Mono<String> generateContent(String prompt) {
         // Create the request body with the model parameter included
         String requestBody = String.format(
-                "{\"model\": \"gpt-3.5-turbo\", \"messages\": [{\"role\": \"user\", \"content\": \"%s\"}], \"max_tokens\": 150}",
+                "{\"model\": \"gpt-4-turbo\", \"messages\": [{\"role\": \"user\", \"content\": \"%s\"}], \"max_tokens\": 150}",
                 prompt.replace("\"", "\\\"")  // Escape double quotes in the prompt
         );
 

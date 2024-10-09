@@ -16,7 +16,7 @@ public class WebClientConfig {
     @Bean
     public WebClient webClient(WebClient.Builder builder) {
         return WebClient.builder()
-                .baseUrl("https://api.openai.com/v1")
+                .baseUrl("https://api.openai.com/v1/chat")
                 .defaultHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
                 .defaultHeader(HttpHeaders.AUTHORIZATION, "Bearer " + apiKey)
                 .build();
