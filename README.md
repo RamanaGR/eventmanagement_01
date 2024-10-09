@@ -38,7 +38,7 @@ The **Event Management** module is a Spring Boot-based application that leverage
 ### Step 1: Clone the Repository
 
 ```bash
-git clone https://github.com/yourusername/event-management.git
+git clone https://github.com/RamanaGR/eventmanagement_01.git
 cd event-management
 ```
 
