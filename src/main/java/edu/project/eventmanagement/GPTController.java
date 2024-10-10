@@ -1,6 +1,7 @@
 package edu.project.eventmanagement;
 
 import edu.project.eventmanagement.service.ContentGeneratorService;
+import edu.project.eventmanagement.service.NLPService;
 import org.apache.commons.lang3.StringEscapeUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -17,6 +18,9 @@ public class GPTController {
     @Autowired
     private ContentGeneratorService contentGeneratorService;
 
+    @Autowired
+    private NLPService nlpService;
+
     @GetMapping("/hello")
     public String sayHello() {
         return "Hello from Spring Boot API!";
@@ -24,7 +28,12 @@ public class GPTController {
 
     @GetMapping("/generate-content")
     public Mono<ResponseEntity<String>> generateContent(@RequestParam String eventType, @RequestParam String details) {
-        String prompt = buildPrompt(eventType, details);
+        // Call the NLPService to analyze the text details before generating content
+        String analyzedDetails = nlpService.analyzeText(details);
+
+        // Build the prompt using the analyzed details
+        String prompt = buildPrompt(eventType, analyzedDetails);
+
         return contentGeneratorService.generateContent(prompt)
                 .map(content -> ResponseEntity.ok(content));
     }
@@ -38,5 +47,4 @@ public class GPTController {
             default -> "Generate content for the event: " + details;
         };
     }
-
 }
