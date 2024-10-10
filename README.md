@@ -5,8 +5,7 @@
 
 ## Project Overview
 
-The **Event Management** module is a Spring Boot-based application that leverages GPT (such as OpenAI's GPT models) to automatically produce customized content for events. This application generates invitations, timetables, and follow-up emails tailored to specific event requirements and exposes a RESTful API to interact with the module.
-
+The AI-Driven Content Generator Module utilizes GPT-4 for content generation and integrates with a Flask microservice running BERT for NLP tasks. This module is a critical component of the AI-Powered Virtual Event Planning Tool.
 ## Features
 
 - **Generate Event Invitations**: Automatically create personalized invitations for events based on user-provided details.
@@ -22,6 +21,7 @@ The **Event Management** module is a Spring Boot-based application that leverage
     - Spring WebFlux (for non-blocking API calls)
 - **Gradle** (Build tool)
 - **OpenAI API** (for GPT-based content generation)
+- **Flask NLP Microservice** A Python Flask service using Hugging Face’s BERT for tasks like sentiment analysis.
 - **Jackson** (for JSON parsing)
 - **WebClient** (for making HTTP requests to external APIs)
 
@@ -30,7 +30,8 @@ The **Event Management** module is a Spring Boot-based application that leverage
 - **Java 17** or higher
 - **Gradle 7.0** or higher
 - An **OpenAI API key** (or another GPT-based service API key)
-
+- **Python 3.8+** for the Flask microservice
+- **Pip** for managing Python dependencies
 ---
 
 ## Setup Instructions
@@ -56,7 +57,28 @@ openai.api.key=YOUR_API_KEY
 
 > **Note:** Replace `YOUR_API_KEY` with your actual OpenAI API key.
 
-### Step 3: Build and Run the Project
+#### 2.a. Setting up the Flask NLP Microservice
+1. **Set up a virtual environment**:
+   ```bash
+   python -m venv venv
+   source venv/bin/activate  # On Windows, use venv\Scripts\activate
+   ```
+2. **Install dependencies**:
+   ```bash
+   pip install flask transformers torch
+   ```
+
+3. **Run the Flask Service**:
+   ```bash
+   python bert_service.py
+   ```
+
+#### 3. Running the Spring Boot Application
+
+**Run the Flask microservice**:
+   ```bash
+   python bert_service.py
+   ```
 
 Build the project using Gradle:
 
@@ -184,7 +206,10 @@ public class ContentController {
 
     @Autowired
     private ContentGeneratorService contentGeneratorService;
-
+    
+    @Autowired
+    private NLPService nlpService;
+    
     @GetMapping("/hello")
     public ResponseEntity<String> hello() {
         return ResponseEntity.ok("Hello from Spring Boot API!");
@@ -192,7 +217,10 @@ public class ContentController {
 
     @GetMapping("/generate-content")
     public Mono<ResponseEntity<String>> generateContent(@RequestParam String eventType, @RequestParam String details) {
-        String prompt = buildPrompt(eventType, details);
+      // Call the NLPService to analyze the text details before generating content
+      String analyzedDetails = nlpService.analyzeText(details);
+
+      String prompt = buildPrompt(eventType, details);
         return contentGeneratorService.generateContent(prompt)
                 .map(content -> ResponseEntity.ok(content));
     }
@@ -207,6 +235,25 @@ public class ContentController {
     }
 }
 ```
+**Create `bert_service.py`**:
+   ```python
+   from flask import Flask, request, jsonify
+   from transformers import pipeline
+
+   app = Flask(__name__)
+   nlp_task = pipeline("sentiment-analysis")
+
+   @app.route('/process_text', methods=['POST'])
+   def process_text():
+       data = request.json
+       text = data.get('text', '')
+       result = nlp_task(text)
+       return jsonify(result)
+
+   if __name__ == '__main__':
+       app.run(port=5000)
+   ```
+
 
 ### 4. **build.gradle**
 Your `build.gradle` includes the necessary dependencies for Spring Web, WebClient, and testing.
